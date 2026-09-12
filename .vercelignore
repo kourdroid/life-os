@@ -1,0 +1,9 @@
+.git
+.github
+tests
+supabase
+LIFE_OS_PLAN.md
+PRODUCT.md
+life-os-site.tar.gz
+config.example.js
+package.json
