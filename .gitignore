@@ -5,3 +5,4 @@ config.js
 life-os-app/
 public/
 life-os-site.tar.gz
+supabase/.temp/
