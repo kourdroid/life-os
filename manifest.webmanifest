@@ -1,0 +1,12 @@
+{
+  "name": "Life OS",
+  "short_name": "Life OS",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0d6c60",
+  "description": "A calm, adaptive personal system for meaningful daily progress.",
+  "icons": [
+    { "src": "/assets/life-os-icon.png", "sizes": "1254x1254", "type": "image/png", "purpose": "any" }
+  ]
+}

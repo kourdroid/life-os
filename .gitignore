@@ -1,0 +1,7 @@
+config.js
+!dist/config.js
+.DS_Store
+*.log
+life-os-app/
+public/
+life-os-site.tar.gz
