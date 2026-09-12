@@ -1,7 +1,12 @@
 .git
 .github
+.vercel
+.env*
 tests
 supabase
+life-os-app
+public
+*.log
 LIFE_OS_PLAN.md
 PRODUCT.md
 life-os-site.tar.gz
