@@ -1,5 +1,5 @@
-const CACHE = "life-os-v4";
-const SHELL = ["/", "/index.html", "/styles.css", "/life-core.js", "/prayer.js", "/supabase.js", "/config.js", "/app.js", "/manifest.webmanifest", "/assets/life-os-forest-companion-banner.png", "/assets/life-os-icon.png"];
+const CACHE = "life-os-v5";
+const SHELL = ["/", "/index.html", "/styles.css", "/assets/phosphor/style.css", "/assets/phosphor/Phosphor.woff2", "/life-core.js", "/prayer.js", "/supabase.js", "/config.js", "/app.js", "/manifest.webmanifest", "/assets/life-os-forest-companion-banner.png", "/assets/life-os-icon.png"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(SHELL)).then(() => self.skipWaiting()));

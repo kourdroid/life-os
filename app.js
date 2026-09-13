@@ -3,9 +3,10 @@
   const C = window.LifeCore;
   const h = C.escapeHtml;
   const NAV = [
-    ["today", "⌂", "Today"], ["week", "▦", "Week"], ["journey", "◫", "Journey"],
-    ["work", "▣", "Work"], ["insights", "◌", "Insights"], ["settings", "⚙", "Settings"],
+    ["today", "house", "Today"], ["week", "calendar-blank", "Week"], ["journey", "tree-evergreen", "Journey"],
+    ["work", "briefcase", "Work"], ["insights", "chart-line-up", "Insights"], ["settings", "gear-six", "Settings"],
   ];
+  const AREA_ICONS = { deen: "moon-stars", licence: "car", job: "briefcase", health: "barbell", youtube: "youtube-logo", experiment: "flask" };
   const TABLES = { commitments: "commitments", jobs: "job_opportunities", driving: "driving_sessions", training: "training_sessions", content: "content_items", experiments: "experiments", income: "income_entries" };
   const LABELS = { deen: "Deen", licence: "Licence", job: "Job", health: "Health", youtube: "YouTube", experiment: "Experiment" };
   const PRAYER_LABELS = { fajr: "Fajr", dhuhr: "Dhuhr", asr: "Asr", maghrib: "Maghrib", isha: "Isha" };
@@ -51,13 +52,17 @@
     toastTimer = setTimeout(() => element.classList.remove("visible"), 3200);
   }
 
+  function icon(name, className = "") {
+    return `<i class="ph ph-${name}${className ? ` ${className}` : ""}" aria-hidden="true"></i>`;
+  }
+
   function navMarkup(container) {
-    container.innerHTML = NAV.map(([key, icon, label]) => `<button class="nav-button ${state.route === key ? "active" : ""}" data-route="${key}" type="button" ${state.route === key ? 'aria-current="page"' : ""}><span class="nav-icon" aria-hidden="true">${icon}</span><span>${label}</span></button>`).join("");
+    container.innerHTML = NAV.map(([key, iconName, label]) => `<button class="nav-button ${state.route === key ? "active" : ""}" data-route="${key}" type="button" ${state.route === key ? 'aria-current="page"' : ""}><span class="nav-icon">${icon(iconName)}</span><span>${label}</span></button>`).join("");
   }
 
   function topbar() {
     const connected = Boolean(window.lifeRemote?.session());
-    return `<header class="topbar"><p class="greeting"><strong>Assalamu alaikum, ${h(state.settings.displayName)}</strong>${h(dateLabel())}</p><div class="top-actions"><button class="sync-pill ${h(syncStatus.state)}" data-action="sync" type="button" aria-label="${h(syncStatus.detail)}"><span></span>${connected ? h(syncStatus.detail) : "Local"}</button><button class="icon-button" type="button" data-action="reminder" aria-label="View real reminders">◔</button><button class="icon-button avatar" type="button" data-route="settings" aria-label="Open settings">🌱</button></div></header>`;
+    return `<header class="topbar"><p class="greeting"><strong>Assalamu alaikum, ${h(state.settings.displayName)}</strong>${h(dateLabel())}</p><div class="top-actions"><button class="sync-pill ${h(syncStatus.state)}" data-action="sync" type="button" aria-label="${h(syncStatus.detail)}"><span></span>${connected ? h(syncStatus.detail) : "Local"}</button><button class="icon-button" type="button" data-action="reminder" aria-label="View real reminders">${icon("bell")}</button><button class="icon-button avatar" type="button" data-route="settings" aria-label="Open settings">${icon("user-circle")}</button></div></header>`;
   }
 
   function pageHeading(title, copy, action = "") {
@@ -65,7 +70,7 @@
   }
 
   function emptyState(title, copy, action = "") {
-    return `<div class="empty-state"><span aria-hidden="true">○</span><div><strong>${h(title)}</strong><p>${h(copy)}</p></div>${action}</div>`;
+    return `<div class="empty-state"><span>${icon("sprout")}</span><div><strong>${h(title)}</strong><p>${h(copy)}</p></div>${action}</div>`;
   }
 
   function prayerCard() {
@@ -93,7 +98,7 @@
   function taskRow(task) {
     const status = task.status || "planned";
     const resolved = status !== "planned";
-    return `<article class="task-row ${h(status)}"><div class="task-main"><span class="area-icon ${h(task.area)}" aria-hidden="true">${{ deen: "☾", licence: "◆", job: "↗", health: "✦", youtube: "▶", experiment: "◇" }[task.area] || "•"}</span><div><div class="task-title-line"><strong>${h(task.title)}</strong><span class="tag ${h(task.importance)}">${h(task.importance)}</span></div><p>${h(task.detail || task.minimum_title || "No detail")}${task.duration_minutes ? ` · ${task.duration_minutes} min` : ""}${task.scheduled_for ? ` · ${h(timeLabel(task.scheduled_for))}` : ""}</p></div></div><div class="task-actions">${resolved ? `<button class="text-button" data-task-status="planned" data-id="${task.id}" type="button">Reopen</button><span class="status-label ${h(status)}">${h(status)}</span>` : `<button class="primary-button compact" data-task-status="completed" data-id="${task.id}" type="button">Done</button><button class="secondary-button compact" data-task-status="reduced" data-id="${task.id}" type="button">Minimum</button><button class="text-button" data-task-move="true" data-id="${task.id}" type="button">Move</button><button class="text-button" data-task-status="skipped" data-id="${task.id}" type="button">Skip</button>`}<button class="icon-quiet" data-remove="commitments" data-id="${task.id}" type="button" aria-label="Remove ${h(task.title)}">×</button></div></article>`;
+    return `<article class="task-row ${h(status)}"><div class="task-main"><span class="area-icon ${h(task.area)}">${icon(AREA_ICONS[task.area] || "circle")}</span><div><div class="task-title-line"><strong>${h(task.title)}</strong><span class="tag ${h(task.importance)}">${h(task.importance)}</span></div><p>${h(task.detail || task.minimum_title || "No detail")}${task.duration_minutes ? ` · ${task.duration_minutes} min` : ""}${task.scheduled_for ? ` · ${h(timeLabel(task.scheduled_for))}` : ""}</p></div></div><div class="task-actions">${resolved ? `<button class="text-button" data-task-status="planned" data-id="${task.id}" type="button">Reopen</button><span class="status-label ${h(status)}">${h(status)}</span>` : `<button class="primary-button compact" data-task-status="completed" data-id="${task.id}" type="button">Done</button><button class="secondary-button compact" data-task-status="reduced" data-id="${task.id}" type="button">Minimum</button><button class="text-button" data-task-move="true" data-id="${task.id}" type="button">Move</button><button class="text-button" data-task-status="skipped" data-id="${task.id}" type="button">Skip</button>`}<button class="icon-quiet" data-remove="commitments" data-id="${task.id}" type="button" aria-label="Remove ${h(task.title)}">${icon("x")}</button></div></article>`;
   }
 
   function commitmentForm(day = currentDay) {
@@ -156,7 +161,7 @@
   }
 
   function recordRow(collection, record, title, subtitle, field, values) {
-    return `<article class="record-row"><div><strong>${h(title)}</strong><p>${h(subtitle || "No next action")}</p></div><div class="record-actions"><select data-update-collection="${collection}" data-update-id="${record.id}" data-update-field="${field}" aria-label="Update ${h(title)}">${selectOptions(values, record[field])}</select><button class="icon-quiet" data-remove="${collection}" data-id="${record.id}" type="button" aria-label="Remove ${h(title)}">×</button></div></article>`;
+    return `<article class="record-row"><div><strong>${h(title)}</strong><p>${h(subtitle || "No next action")}</p></div><div class="record-actions"><select data-update-collection="${collection}" data-update-id="${record.id}" data-update-field="${field}" aria-label="Update ${h(title)}">${selectOptions(values, record[field])}</select><button class="icon-quiet" data-remove="${collection}" data-id="${record.id}" type="button" aria-label="Remove ${h(title)}">${icon("x")}</button></div></article>`;
   }
 
   function workSection(title, copy, collection, rows, form) {
@@ -202,11 +207,15 @@
     return `${topbar()}${pageHeading("Insights", "Only evidence from your records. No estimated streaks or invented progress.")}<section class="signal-grid">${signals.map(([value,label])=>`<div><strong>${h(value)}</strong><span>${h(label)}</span></div>`).join("")}</section><section class="question-panel"><h2>One useful question</h2><p>${tasks.length ? "Which commitment repeatedly stays planned and needs a smaller minimum version?" : "What deserves a real place in the week instead of depending on motivation?"}</p></section>`;
   }
 
+  function passwordAuthMarkup() {
+    return `<p class="auth-intro">Use your email and password. Your session stays signed in on this device and syncs directly to SAQR.</p><form class="auth-form" data-form="password-login"><label>Email<input name="email" type="email" required autocomplete="email" placeholder="Your SAQR email" /></label><label>Password<input name="password" type="password" required minlength="8" autocomplete="current-password" /></label><button class="primary-button" type="submit">${icon("sign-in")} Sign in</button></form><details class="account-create"><summary>${icon("user-plus")} First time? Create your account</summary><form class="auth-form" data-form="password-signup"><label>Email<input name="email" type="email" required autocomplete="email" placeholder="Your SAQR email" /></label><label>Password<input name="password" type="password" required minlength="8" autocomplete="new-password" aria-describedby="password-help" /></label><label>Confirm password<input name="passwordConfirm" type="password" required minlength="8" autocomplete="new-password" /></label><button class="secondary-button" type="submit">${icon("user-plus")} Create account</button></form><p id="password-help" class="auth-help">Use at least 8 characters. If SAQR asks for verification, it is only for this first account setup.</p></details>`;
+  }
+
   function settingsScreen() {
     const prayer = state.settings.prayer;
     const session = window.lifeRemote?.session();
     const locationText = prayer.latitude != null ? `Coordinates ${Number(prayer.latitude).toFixed(3)}, ${Number(prayer.longitude).toFixed(3)}` : prayer.city ? `${prayer.city}, ${prayer.country}` : "No prayer location saved";
-    return `${topbar()}${pageHeading("Settings", "Your targets, prayer source, sync, and portable data.")}<div class="settings-stack"><section class="settings-section"><div class="section-title"><div><h2>Personal targets</h2><p>These values change real calculations.</p></div></div><form class="form-grid" data-form="settings"><label>Name<input name="displayName" maxlength="80" value="${h(state.settings.displayName)}" required /></label><label>Timezone<input name="timezone" maxlength="80" value="${h(state.settings.timezone)}" required /></label><label>Quran target in hizb<input name="quranTarget" type="number" min="0.25" max="60" step="0.25" value="${state.settings.quranTarget}" required /></label><label>Monthly income goal in USD<input name="incomeGoal" type="number" min="0" step="1" value="${state.settings.incomeGoal}" required /></label><div class="form-actions span-2"><button class="primary-button" type="submit">Save targets</button></div></form></section><section class="settings-section" id="prayer-location"><div class="section-title"><div><h2>Prayer times</h2><p>${h(locationText)} · Morocco calculation method by default.</p></div><span class="api-badge">AlAdhan API</span></div><form class="form-grid" data-form="prayer-location"><label>City<input name="city" maxlength="120" value="${h(prayer.city || "")}" placeholder="Your city" /></label><label>Country<input name="country" maxlength="120" value="${h(prayer.country || "Morocco")}" required /></label><label>Calculation method<select name="method"><option value="21" ${prayer.method===21?"selected":""}>Morocco</option><option value="3" ${prayer.method===3?"selected":""}>Muslim World League</option><option value="4" ${prayer.method===4?"selected":""}>Umm Al-Qura</option><option value="5" ${prayer.method===5?"selected":""}>Egyptian Authority</option></select></label><label>Asr school<select name="school"><option value="0" ${prayer.school===0?"selected":""}>Standard</option><option value="1" ${prayer.school===1?"selected":""}>Hanafi</option></select></label><div class="form-actions span-2"><button class="primary-button" type="submit">Save and load times</button><button class="secondary-button" data-action="device-location" type="button">Use this device location</button></div></form></section><section class="settings-section"><div class="section-title"><div><h2>SAQR sync</h2><p>${session ? h(syncStatus.detail) : "Sign in to sync the same records on PC and Android."}</p></div><span class="connection-dot ${session ? "connected" : ""}"></span></div>${session ? `<div class="form-actions"><button class="primary-button" data-action="sync" type="button">Sync now</button><button class="secondary-button" data-action="sign-out" type="button">Sign out on this device</button></div>` : `<form class="auth-form" data-form="magic-link"><label>Email<input name="email" type="email" required autocomplete="email" placeholder="Your SAQR Auth email" /></label><button class="primary-button" type="submit">Send sign-in link</button></form><details class="otp-box"><summary>I received a six-digit code</summary><form class="auth-form" data-form="otp"><label>Email<input name="email" type="email" required autocomplete="email" /></label><label>Code<input name="token" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" required /></label><button class="primary-button" type="submit">Verify code</button></form></details>`}</section><section class="settings-section"><div class="section-title"><div><h2>Your data</h2><p>Export is complete and import validates the Life OS format.</p></div></div><div class="form-actions"><button class="primary-button" data-action="export" type="button">Export JSON</button><label class="secondary-button file-button">Import JSON<input id="import-file" type="file" accept="application/json" /></label>${installPrompt ? `<button class="secondary-button" data-action="install" type="button">Install app</button>` : ""}</div><p class="legacy-note">The old preview remains stored separately and was not imported because it contained demo records.</p></section></div>`;
+    return `${topbar()}${pageHeading("Settings", "Your targets, prayer source, sync, and portable data.")}<div class="settings-stack"><section class="settings-section"><div class="section-title"><div><h2>Personal targets</h2><p>These values change real calculations.</p></div></div><form class="form-grid" data-form="settings"><label>Name<input name="displayName" maxlength="80" value="${h(state.settings.displayName)}" required /></label><label>Timezone<input name="timezone" maxlength="80" value="${h(state.settings.timezone)}" required /></label><label>Quran target in hizb<input name="quranTarget" type="number" min="0.25" max="60" step="0.25" value="${state.settings.quranTarget}" required /></label><label>Monthly income goal in USD<input name="incomeGoal" type="number" min="0" step="1" value="${state.settings.incomeGoal}" required /></label><div class="form-actions span-2"><button class="primary-button" type="submit">Save targets</button></div></form></section><section class="settings-section" id="prayer-location"><div class="section-title"><div><h2>Prayer times</h2><p>${h(locationText)} · Morocco calculation method by default.</p></div><span class="api-badge">AlAdhan API</span></div><form class="form-grid" data-form="prayer-location"><label>City<input name="city" maxlength="120" value="${h(prayer.city || "")}" placeholder="Your city" /></label><label>Country<input name="country" maxlength="120" value="${h(prayer.country || "Morocco")}" required /></label><label>Calculation method<select name="method"><option value="21" ${prayer.method===21?"selected":""}>Morocco</option><option value="3" ${prayer.method===3?"selected":""}>Muslim World League</option><option value="4" ${prayer.method===4?"selected":""}>Umm Al-Qura</option><option value="5" ${prayer.method===5?"selected":""}>Egyptian Authority</option></select></label><label>Asr school<select name="school"><option value="0" ${prayer.school===0?"selected":""}>Standard</option><option value="1" ${prayer.school===1?"selected":""}>Hanafi</option></select></label><div class="form-actions span-2"><button class="primary-button" type="submit">Save and load times</button><button class="secondary-button" data-action="device-location" type="button">Use this device location</button></div></form></section><section class="settings-section"><div class="section-title"><div><h2>SAQR sync</h2><p>${session ? h(syncStatus.detail) : "Sign in to sync the same records on PC and Android."}</p></div><span class="connection-dot ${session ? "connected" : ""}"></span></div>${session ? `<div class="form-actions"><button class="primary-button" data-action="sync" type="button">${icon("cloud-arrow-up")} Sync now</button><button class="secondary-button" data-action="sign-out" type="button">${icon("sign-out")} Sign out on this device</button></div>` : passwordAuthMarkup()}</section><section class="settings-section"><div class="section-title"><div><h2>Your data</h2><p>Export is complete and import validates the Life OS format.</p></div></div><div class="form-actions"><button class="primary-button" data-action="export" type="button">${icon("download-simple")} Export JSON</button><label class="secondary-button file-button">${icon("upload-simple")} Import JSON<input id="import-file" type="file" accept="application/json" /></label>${installPrompt ? `<button class="secondary-button" data-action="install" type="button">Install app</button>` : ""}</div><p class="legacy-note">The old preview remains stored separately and was not imported because it contained demo records.</p></section></div>`;
   }
 
   function render() {
@@ -304,23 +313,39 @@
       state.settings.prayer = { ...state.settings.prayer, city: formValue(form,"city"), country: formValue(form,"country"), latitude: null, longitude: null, method: Number(formValue(form,"method")), school: Number(formValue(form,"school")) };
       state.settings.updatedAt = C.nowIso();
       persist("Prayer location saved."); render(); loadPrayer();
-    } else if (type === "magic-link") {
-      submitMagicLink(form);
-    } else if (type === "otp") {
-      submitOtp(form);
+    } else if (type === "password-login") {
+      submitPasswordLogin(form);
+    } else if (type === "password-signup") {
+      submitPasswordSignup(form);
     }
   }
 
-  async function submitMagicLink(form) {
+  async function submitPasswordLogin(form) {
     const button = form.querySelector("button"); button.disabled = true;
-    try { await window.lifeRemote.sendMagicLink(formValue(form,"email")); toast("Secure sign-in link sent. Check your email."); }
+    try {
+      await window.lifeRemote.signInWithPassword(formValue(form,"email"), formValue(form,"password"));
+      toast("Signed in. Syncing your real records now.");
+      await syncNow();
+      render();
+    }
     catch (error) { toast(error.message, "error"); }
     finally { button.disabled = false; }
   }
 
-  async function submitOtp(form) {
+  async function submitPasswordSignup(form) {
     const button = form.querySelector("button"); button.disabled = true;
-    try { await window.lifeRemote.verifyOtp(formValue(form,"email"),formValue(form,"token")); toast("Signed in. Syncing now."); await syncNow(); render(); }
+    try {
+      const password = formValue(form,"password");
+      if (password !== formValue(form,"passwordConfirm")) throw new Error("The password confirmation does not match.");
+      const result = await window.lifeRemote.signUpWithPassword(formValue(form,"email"), password);
+      if (result.session) {
+        toast("Account created. Syncing your real records now.");
+        await syncNow();
+      } else {
+        toast("Account created. Confirm your email once, then sign in with your password.");
+      }
+      render();
+    }
     catch (error) { toast(error.message, "error"); }
     finally { button.disabled = false; }
   }

@@ -1,5 +1,6 @@
 .DS_Store
 *.log
+node_modules/
 life-os-app/
 public/
 life-os-site.tar.gz

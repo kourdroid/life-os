@@ -79,15 +79,16 @@
       return data;
     }
 
-    async sendMagicLink(email) {
-      await this.authRequest("/otp", { email, create_user: true, options: { email_redirect_to: `${location.origin}${location.pathname}` } });
-      return true;
-    }
-
-    async verifyOtp(email, token) {
-      const session = await this.authRequest("/verify", { email, token, type: "email" });
+    async signInWithPassword(email, password) {
+      const session = await this.authRequest("/token?grant_type=password", { email, password });
       this.saveSession(session);
       return session;
+    }
+
+    async signUpWithPassword(email, password) {
+      const result = await this.authRequest("/signup", { email, password, options: { email_redirect_to: `${location.origin}${location.pathname}` } });
+      if (result.session) this.saveSession(result.session);
+      return result;
     }
 
     async refreshIfNeeded() {
