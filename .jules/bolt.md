@@ -1,0 +1,3 @@
+## 2023-10-27 - Intl.DateTimeFormat instantiation bottleneck
+**Learning:** Found a severe performance anti-pattern in `life-core.js` where `Intl.DateTimeFormat` was being instantiated on every date formatting call inside `zonedParts`. This caused operations like `activityDates` to be extremely slow (~6s for 500 records) due to the high cost of creating formatter objects in V8.
+**Action:** Always look for and cache `Intl.DateTimeFormat` (and other `Intl` objects) when formatting multiple dates, especially in loops or frequently called utility functions like `dateKey` or `timeKey`. Use the timezone or locale as the cache key.
