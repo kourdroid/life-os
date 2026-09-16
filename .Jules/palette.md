@@ -1,0 +1,3 @@
+## 2024-05-24 - Screen Reader Clarity for Special Characters and Unlabelled Textareas
+**Learning:** Screen readers often struggle with unlabelled textareas and special characters in buttons (like `¼`). It is important to explicitly add `aria-label` to provide clear, actionable descriptions for these interactive elements, and `role="progressbar"` with `aria-valuenow`, `aria-valuemin`, `aria-valuemax` to visual progress tracks.
+**Action:** Always add clear `aria-label` attributes to textareas that lack explicit associated labels (like the reflection textareas here), use explicit `aria-label` strings for buttons containing mathematical or special characters, and apply standard ARIA roles for custom visual components like progress bars.
