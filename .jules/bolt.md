@@ -1,0 +1,3 @@
+## 2024-05-10 - Intl.DateTimeFormat Instantiation Bottleneck
+**Learning:** In vanilla JavaScript local-first apps that do heavy date parsing across large histories (like calculating streaks over 1000 days), instantiating `new Intl.DateTimeFormat()` inside tight loops (like in `zonedParts` or UI formatters) can cause massive performance degradation (over 10x slower, adding minutes to operations that should take milliseconds). The V8 engine does not optimize away the instantiation cost.
+**Action:** Always cache and reuse `Intl.DateTimeFormat` instances (e.g., using a `Map` keyed by timezone) when formatting or parsing dates inside loops or frequently called utility functions.

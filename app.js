@@ -24,13 +24,27 @@
   C.ensureWeek(state, currentDay);
   C.save(state);
 
+  const dateFormatters = new Map();
   function dateLabel(day = currentDay, options = {}) {
-    return new Intl.DateTimeFormat("en", { timeZone: "UTC", weekday: options.short ? "short" : "long", month: options.short ? "short" : "long", day: "numeric" }).format(new Date(`${day}T12:00:00Z`));
+    const key = options.short ? "short" : "long";
+    let formatter = dateFormatters.get(key);
+    if (!formatter) {
+      formatter = new Intl.DateTimeFormat("en", { timeZone: "UTC", weekday: key, month: key, day: "numeric" });
+      dateFormatters.set(key, formatter);
+    }
+    return formatter.format(new Date(`${day}T12:00:00Z`));
   }
 
+  const timeFormatters = new Map();
   function timeLabel(value) {
     if (!value) return "No time";
-    return new Intl.DateTimeFormat("en", { timeZone: state.settings.timezone, hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).format(new Date(value));
+    const timeZone = state.settings.timezone;
+    let formatter = timeFormatters.get(timeZone);
+    if (!formatter) {
+      formatter = new Intl.DateTimeFormat("en", { timeZone, hour: "2-digit", minute: "2-digit", hourCycle: "h23" });
+      timeFormatters.set(timeZone, formatter);
+    }
+    return formatter.format(new Date(value));
   }
 
   function money(value, currency = "USD") {
