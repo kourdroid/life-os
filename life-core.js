@@ -16,11 +16,17 @@
 
   function nowIso() { return new Date().toISOString(); }
 
+  // Cache Intl.DateTimeFormat instances to avoid expensive instantiation on every call.
+  const _formatters = {};
+
   function zonedParts(date = new Date(), timeZone = "Africa/Casablanca") {
-    const parts = new Intl.DateTimeFormat("en-CA", {
-      timeZone, year: "numeric", month: "2-digit", day: "2-digit",
-      hour: "2-digit", minute: "2-digit", hourCycle: "h23",
-    }).formatToParts(date);
+    if (!_formatters[timeZone]) {
+      _formatters[timeZone] = new Intl.DateTimeFormat("en-CA", {
+        timeZone, year: "numeric", month: "2-digit", day: "2-digit",
+        hour: "2-digit", minute: "2-digit", hourCycle: "h23",
+      });
+    }
+    const parts = _formatters[timeZone].formatToParts(date);
     return Object.fromEntries(parts.map((part) => [part.type, part.value]));
   }
 
