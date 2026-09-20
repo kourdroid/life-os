@@ -1,0 +1,3 @@
+## 2024-05-18 - Caching Intl formatters in innerHTML rendering apps
+**Learning:** Instantiating `Intl.DateTimeFormat` or `Intl.NumberFormat` inside loops or in code paths executed frequently during redraws (like this app's architecture which uses `innerHTML` to completely redraw the main content on every interaction) is a severe performance bottleneck. Generating an `Intl` instance is significantly more expensive than formatting a value with an existing instance.
+**Action:** Always cache `Intl.DateTimeFormat` and `Intl.NumberFormat` instances by locale, timezone, or options in local-first pure JS applications that frequently redraw large parts of the DOM.
