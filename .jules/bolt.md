@@ -1,0 +1,3 @@
+## 2024-05-24 - Expensive Intl formatter initialization
+**Learning:** Instantiating `Intl.DateTimeFormat` or `Intl.NumberFormat` repeatedly is a severe performance bottleneck, especially in this application where UI updates trigger frequent and complete redraws (`innerHTML`) and where they are used inside of loops to render numerous elements. Initializing formatters on every invocation adds significant overhead.
+**Action:** Always cache instances of `Intl.DateTimeFormat` and `Intl.NumberFormat` by their relevant options (e.g., locale, timezone, format type, currency). Reuse these cached formatters for operations rather than repeatedly creating new ones.
