@@ -260,6 +260,11 @@
   function removeRecord(collection, id) {
     const record = state[collection].find((item) => item.id === id);
     if (!record) return;
+
+    if (!window.confirm(`Are you sure you want to remove this ${record.title || record.role || record.source || "record"}?`)) {
+      return;
+    }
+
     state[collection] = state[collection].filter((item) => item.id !== id);
     state.outbox.push({ table: TABLES[collection], id });
     persist(`${record.title || record.role || record.source || "Record"} removed.`);
