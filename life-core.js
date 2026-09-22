@@ -16,11 +16,18 @@
 
   function nowIso() { return new Date().toISOString(); }
 
+  const zonedFmtCache = new Map();
+
   function zonedParts(date = new Date(), timeZone = "Africa/Casablanca") {
-    const parts = new Intl.DateTimeFormat("en-CA", {
-      timeZone, year: "numeric", month: "2-digit", day: "2-digit",
-      hour: "2-digit", minute: "2-digit", hourCycle: "h23",
-    }).formatToParts(date);
+    let fmt = zonedFmtCache.get(timeZone);
+    if (!fmt) {
+      fmt = new Intl.DateTimeFormat("en-CA", {
+        timeZone, year: "numeric", month: "2-digit", day: "2-digit",
+        hour: "2-digit", minute: "2-digit", hourCycle: "h23",
+      });
+      zonedFmtCache.set(timeZone, fmt);
+    }
+    const parts = fmt.formatToParts(date);
     return Object.fromEntries(parts.map((part) => [part.type, part.value]));
   }
 
