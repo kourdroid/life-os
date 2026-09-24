@@ -16,11 +16,22 @@
 
   function nowIso() { return new Date().toISOString(); }
 
+  // Formatters cache to prevent re-instantiation on every render cycle
+  const formatters = {};
+
+  function getFormatter(timeZone) {
+    if (!formatters[timeZone]) {
+      formatters[timeZone] = new Intl.DateTimeFormat("en-CA", {
+        timeZone, year: "numeric", month: "2-digit", day: "2-digit",
+        hour: "2-digit", minute: "2-digit", hourCycle: "h23",
+      });
+    }
+    return formatters[timeZone];
+  }
+
   function zonedParts(date = new Date(), timeZone = "Africa/Casablanca") {
-    const parts = new Intl.DateTimeFormat("en-CA", {
-      timeZone, year: "numeric", month: "2-digit", day: "2-digit",
-      hour: "2-digit", minute: "2-digit", hourCycle: "h23",
-    }).formatToParts(date);
+    const formatter = getFormatter(timeZone);
+    const parts = formatter.formatToParts(date);
     return Object.fromEntries(parts.map((part) => [part.type, part.value]));
   }
 
