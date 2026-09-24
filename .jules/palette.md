@@ -1,0 +1,3 @@
+## 2024-05-18 - Prevent accidental data loss for instant mutations
+**Learning:** Destructive actions triggered by `[data-remove]` instantly mutate local state and sync. Without a confirmation prompt, users can accidentally delete records with no easy way to undo.
+**Action:** Always wrap destructive actions in this app with a confirmation step (e.g., `window.confirm`) to prevent accidental data loss.
