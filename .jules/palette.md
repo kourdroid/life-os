@@ -1,0 +1,3 @@
+## 2024-06-25 - Prevent Accidental Data Loss with Confirmations
+**Learning:** Destructive actions in this application (such as deletions triggered via `[data-remove]` elements) instantly mutate local state and sync. Because this happens instantly and without warning, it is easy to accidentally delete important records if a user misclicks.
+**Action:** Always wrap destructive actions in a confirmation step (e.g., `window.confirm`) to prevent accidental data loss in this architecture.

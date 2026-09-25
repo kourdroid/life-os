@@ -377,7 +377,7 @@
     const route = event.target.closest("[data-route]");
     if (route) { state.route = route.dataset.route; if (route.dataset.selectDay) { currentDay = route.dataset.selectDay; C.ensureDay(state,currentDay); } persist(null,false); render(); loadPrayer(); document.querySelector("#app").focus(); return; }
     const action = event.target.closest("[data-action]"); if (action) { handleAction(action.dataset.action); return; }
-    const remove = event.target.closest("[data-remove]"); if (remove) { removeRecord(remove.dataset.remove, remove.dataset.id); return; }
+    const remove = event.target.closest("[data-remove]"); if (remove) { if (window.confirm("Are you sure you want to remove this record?")) removeRecord(remove.dataset.remove, remove.dataset.id); return; }
     const task = event.target.closest("[data-task-status]");
     if (task) { const item = state.commitments.find((x)=>x.id===task.dataset.id); if(item){item.status=task.dataset.taskStatus;C.touch(item);persist(`Commitment ${item.status}.`);render();} return; }
     const move = event.target.closest("[data-task-move]");
