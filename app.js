@@ -24,17 +24,27 @@
   C.ensureWeek(state, currentDay);
   C.save(state);
 
+  // ⚡ Bolt: Cache Intl formatters to prevent slow redraws
+  const _formatters = new Map();
+  function getFormatter(Type, locale, options) {
+    const key = `${Type.name}-${locale}-${JSON.stringify(options)}`;
+    if (!_formatters.has(key)) {
+      _formatters.set(key, new Type(locale, options));
+    }
+    return _formatters.get(key);
+  }
+
   function dateLabel(day = currentDay, options = {}) {
-    return new Intl.DateTimeFormat("en", { timeZone: "UTC", weekday: options.short ? "short" : "long", month: options.short ? "short" : "long", day: "numeric" }).format(new Date(`${day}T12:00:00Z`));
+    return getFormatter(Intl.DateTimeFormat, "en", { timeZone: "UTC", weekday: options.short ? "short" : "long", month: options.short ? "short" : "long", day: "numeric" }).format(new Date(`${day}T12:00:00Z`));
   }
 
   function timeLabel(value) {
     if (!value) return "No time";
-    return new Intl.DateTimeFormat("en", { timeZone: state.settings.timezone, hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).format(new Date(value));
+    return getFormatter(Intl.DateTimeFormat, "en", { timeZone: state.settings.timezone, hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).format(new Date(value));
   }
 
   function money(value, currency = "USD") {
-    return new Intl.NumberFormat("en", { style: "currency", currency: String(currency).trim() || "USD", maximumFractionDigits: 2 }).format(Number(value || 0));
+    return getFormatter(Intl.NumberFormat, "en", { style: "currency", currency: String(currency).trim() || "USD", maximumFractionDigits: 2 }).format(Number(value || 0));
   }
 
   function persist(message, sync = true) {
@@ -300,7 +310,7 @@
       addRecord("income", { source: formValue(form,"source"), amount: Number(formValue(form,"amount")), currency: formValue(form,"currency").toUpperCase(), received_on: formValue(form,"day"), status: formValue(form,"status"), note: null }, "Income record added.");
     } else if (type === "settings") {
       const timezone = formValue(form,"timezone");
-      try { new Intl.DateTimeFormat("en", { timeZone: timezone }).format(); }
+      try { getFormatter(Intl.DateTimeFormat, "en", { timeZone: timezone }).format(); }
       catch { toast("Use a valid IANA timezone such as Africa/Casablanca.", "error"); return; }
       state.settings.displayName = formValue(form,"displayName");
       state.settings.timezone = timezone;
