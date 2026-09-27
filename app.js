@@ -24,17 +24,34 @@
   C.ensureWeek(state, currentDay);
   C.save(state);
 
+  // Cache formatter instances by locale/timezone/options to avoid expensive instantiations on every redraw
+  const dateFormatterCache = new Map();
+  const numberFormatterCache = new Map();
+
   function dateLabel(day = currentDay, options = {}) {
-    return new Intl.DateTimeFormat("en", { timeZone: "UTC", weekday: options.short ? "short" : "long", month: options.short ? "short" : "long", day: "numeric" }).format(new Date(`${day}T12:00:00Z`));
+    const key = `en-UTC-${options.short ? "short" : "long"}`;
+    if (!dateFormatterCache.has(key)) {
+      dateFormatterCache.set(key, new Intl.DateTimeFormat("en", { timeZone: "UTC", weekday: options.short ? "short" : "long", month: options.short ? "short" : "long", day: "numeric" }));
+    }
+    return dateFormatterCache.get(key).format(new Date(`${day}T12:00:00Z`));
   }
 
   function timeLabel(value) {
     if (!value) return "No time";
-    return new Intl.DateTimeFormat("en", { timeZone: state.settings.timezone, hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).format(new Date(value));
+    const key = `en-${state.settings.timezone}`;
+    if (!dateFormatterCache.has(key)) {
+      dateFormatterCache.set(key, new Intl.DateTimeFormat("en", { timeZone: state.settings.timezone, hour: "2-digit", minute: "2-digit", hourCycle: "h23" }));
+    }
+    return dateFormatterCache.get(key).format(new Date(value));
   }
 
   function money(value, currency = "USD") {
-    return new Intl.NumberFormat("en", { style: "currency", currency: String(currency).trim() || "USD", maximumFractionDigits: 2 }).format(Number(value || 0));
+    const c = String(currency).trim() || "USD";
+    const key = `en-${c}`;
+    if (!numberFormatterCache.has(key)) {
+      numberFormatterCache.set(key, new Intl.NumberFormat("en", { style: "currency", currency: c, maximumFractionDigits: 2 }));
+    }
+    return numberFormatterCache.get(key).format(Number(value || 0));
   }
 
   function persist(message, sync = true) {
