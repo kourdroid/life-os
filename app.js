@@ -20,21 +20,38 @@
   let installPrompt;
   let syncStatus = window.lifeRemote?.session() ? { state: "idle", detail: "Ready to sync" } : { state: "offline", detail: "Local mode" };
 
+  // ⚡ Bolt: Cache Intl formatters to prevent performance bottleneck on redraws
+  const formatterCache = new Map();
+  function getCachedFormatter(type, cacheKey, options) {
+    const key = `${type}-${cacheKey}`;
+    if (!formatterCache.has(key)) {
+      formatterCache.set(key, type === "date" ? new Intl.DateTimeFormat("en", options) : new Intl.NumberFormat("en", options));
+    }
+    return formatterCache.get(key);
+  }
+
   C.ensureDay(state, currentDay);
   C.ensureWeek(state, currentDay);
   C.save(state);
 
   function dateLabel(day = currentDay, options = {}) {
-    return new Intl.DateTimeFormat("en", { timeZone: "UTC", weekday: options.short ? "short" : "long", month: options.short ? "short" : "long", day: "numeric" }).format(new Date(`${day}T12:00:00Z`));
+    const cacheKey = `UTC-${options.short ? "short" : "long"}`;
+    const formatter = getCachedFormatter("date", cacheKey, { timeZone: "UTC", weekday: options.short ? "short" : "long", month: options.short ? "short" : "long", day: "numeric" });
+    return formatter.format(new Date(`${day}T12:00:00Z`));
   }
 
   function timeLabel(value) {
     if (!value) return "No time";
-    return new Intl.DateTimeFormat("en", { timeZone: state.settings.timezone, hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).format(new Date(value));
+    const cacheKey = `time-${state.settings.timezone}`;
+    const formatter = getCachedFormatter("date", cacheKey, { timeZone: state.settings.timezone, hour: "2-digit", minute: "2-digit", hourCycle: "h23" });
+    return formatter.format(new Date(value));
   }
 
   function money(value, currency = "USD") {
-    return new Intl.NumberFormat("en", { style: "currency", currency: String(currency).trim() || "USD", maximumFractionDigits: 2 }).format(Number(value || 0));
+    const curr = String(currency).trim() || "USD";
+    const cacheKey = curr;
+    const formatter = getCachedFormatter("number", cacheKey, { style: "currency", currency: curr, maximumFractionDigits: 2 });
+    return formatter.format(Number(value || 0));
   }
 
   function persist(message, sync = true) {
@@ -300,7 +317,7 @@
       addRecord("income", { source: formValue(form,"source"), amount: Number(formValue(form,"amount")), currency: formValue(form,"currency").toUpperCase(), received_on: formValue(form,"day"), status: formValue(form,"status"), note: null }, "Income record added.");
     } else if (type === "settings") {
       const timezone = formValue(form,"timezone");
-      try { new Intl.DateTimeFormat("en", { timeZone: timezone }).format(); }
+      try { getCachedFormatter("date", timezone, { timeZone: timezone }).format(); }
       catch { toast("Use a valid IANA timezone such as Africa/Casablanca.", "error"); return; }
       state.settings.displayName = formValue(form,"displayName");
       state.settings.timezone = timezone;
