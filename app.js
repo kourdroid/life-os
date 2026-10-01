@@ -24,17 +24,40 @@
   C.ensureWeek(state, currentDay);
   C.save(state);
 
+  // ⚡ Bolt: Cache Intl formatters to avoid the performance bottleneck of instantiating them on every call
+  const formatters = new Map();
+
   function dateLabel(day = currentDay, options = {}) {
-    return new Intl.DateTimeFormat("en", { timeZone: "UTC", weekday: options.short ? "short" : "long", month: options.short ? "short" : "long", day: "numeric" }).format(new Date(`${day}T12:00:00Z`));
+    const isShort = Boolean(options.short);
+    const cacheKey = `date-en-UTC-${isShort}`;
+    let formatter = formatters.get(cacheKey);
+    if (!formatter) {
+      formatter = new Intl.DateTimeFormat("en", { timeZone: "UTC", weekday: isShort ? "short" : "long", month: isShort ? "short" : "long", day: "numeric" });
+      formatters.set(cacheKey, formatter);
+    }
+    return formatter.format(new Date(`${day}T12:00:00Z`));
   }
 
   function timeLabel(value) {
     if (!value) return "No time";
-    return new Intl.DateTimeFormat("en", { timeZone: state.settings.timezone, hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).format(new Date(value));
+    const cacheKey = `time-en-${state.settings.timezone}`;
+    let formatter = formatters.get(cacheKey);
+    if (!formatter) {
+      formatter = new Intl.DateTimeFormat("en", { timeZone: state.settings.timezone, hour: "2-digit", minute: "2-digit", hourCycle: "h23" });
+      formatters.set(cacheKey, formatter);
+    }
+    return formatter.format(new Date(value));
   }
 
   function money(value, currency = "USD") {
-    return new Intl.NumberFormat("en", { style: "currency", currency: String(currency).trim() || "USD", maximumFractionDigits: 2 }).format(Number(value || 0));
+    const safeCurrency = String(currency).trim() || "USD";
+    const cacheKey = `money-en-${safeCurrency}`;
+    let formatter = formatters.get(cacheKey);
+    if (!formatter) {
+      formatter = new Intl.NumberFormat("en", { style: "currency", currency: safeCurrency, maximumFractionDigits: 2 });
+      formatters.set(cacheKey, formatter);
+    }
+    return formatter.format(Number(value || 0));
   }
 
   function persist(message, sync = true) {
