@@ -1,0 +1,3 @@
+## 2024-10-04 - Prevent Accidental Data Loss on Destructive Actions
+**Learning:** In applications where destructive actions (like delete) immediately mutate local state and possibly sync to a backend, instantaneous clicks can cause accidental and irreversible data loss.
+**Action:** Always wrap destructive actions triggered from the UI with a confirmation dialog (e.g., `window.confirm`) before committing the mutation to local state and the database.
