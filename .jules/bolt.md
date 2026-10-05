@@ -1,0 +1,3 @@
+## 2024-05-17 - Cached Intl formatters for UI updates
+**Learning:** Instantiating `Intl.DateTimeFormat` or `Intl.NumberFormat` inside loops or frequent redrawing cycles is a severe performance bottleneck in this app's architecture due to `innerHTML` complete redraws. Cache keys must include specific formatting options or a type prefix (e.g., 'time-' vs 'date-') to prevent cache key collisions between different formats sharing the same timezone or locale.
+**Action:** Always cache formatter instances by locale/timezone and prefix cache keys to avoid collisions.
