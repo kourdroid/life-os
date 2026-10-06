@@ -24,17 +24,38 @@
   C.ensureWeek(state, currentDay);
   C.save(state);
 
+  const formatterCache = new Map();
+
   function dateLabel(day = currentDay, options = {}) {
-    return new Intl.DateTimeFormat("en", { timeZone: "UTC", weekday: options.short ? "short" : "long", month: options.short ? "short" : "long", day: "numeric" }).format(new Date(`${day}T12:00:00Z`));
+    const key = `date-${options.short ? "short" : "long"}`;
+    let formatter = formatterCache.get(key);
+    if (!formatter) {
+      formatter = new Intl.DateTimeFormat("en", { timeZone: "UTC", weekday: options.short ? "short" : "long", month: options.short ? "short" : "long", day: "numeric" });
+      formatterCache.set(key, formatter);
+    }
+    return formatter.format(new Date(`${day}T12:00:00Z`));
   }
 
   function timeLabel(value) {
     if (!value) return "No time";
-    return new Intl.DateTimeFormat("en", { timeZone: state.settings.timezone, hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).format(new Date(value));
+    const key = `time-${state.settings.timezone}`;
+    let formatter = formatterCache.get(key);
+    if (!formatter) {
+      formatter = new Intl.DateTimeFormat("en", { timeZone: state.settings.timezone, hour: "2-digit", minute: "2-digit", hourCycle: "h23" });
+      formatterCache.set(key, formatter);
+    }
+    return formatter.format(new Date(value));
   }
 
   function money(value, currency = "USD") {
-    return new Intl.NumberFormat("en", { style: "currency", currency: String(currency).trim() || "USD", maximumFractionDigits: 2 }).format(Number(value || 0));
+    const c = String(currency).trim() || "USD";
+    const key = `currency-${c}`;
+    let formatter = formatterCache.get(key);
+    if (!formatter) {
+      formatter = new Intl.NumberFormat("en", { style: "currency", currency: c, maximumFractionDigits: 2 });
+      formatterCache.set(key, formatter);
+    }
+    return formatter.format(Number(value || 0));
   }
 
   function persist(message, sync = true) {
