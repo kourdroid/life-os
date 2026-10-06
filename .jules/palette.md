@@ -1,0 +1,3 @@
+## 2024-03-24 - Handling Destroy Actions in Instant-Mutation Architecture
+**Learning:** This application uses a local-first architecture where actions like deletion (e.g., triggered by `[data-remove]` clicks) instantly mutate local state and trigger a sync, without any backend round-trips or intermediate loading states. This makes accidental clicks extremely destructive and immediate.
+**Action:** Always wrap destructive actions in this app with a confirmation step (like `window.confirm`) to provide a crucial safety buffer against misclicks.
