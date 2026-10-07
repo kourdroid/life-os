@@ -16,11 +16,18 @@
 
   function nowIso() { return new Date().toISOString(); }
 
+  const FORMATTERS = new Map();
+
   function zonedParts(date = new Date(), timeZone = "Africa/Casablanca") {
-    const parts = new Intl.DateTimeFormat("en-CA", {
-      timeZone, year: "numeric", month: "2-digit", day: "2-digit",
-      hour: "2-digit", minute: "2-digit", hourCycle: "h23",
-    }).formatToParts(date);
+    let formatter = FORMATTERS.get(timeZone);
+    if (!formatter) {
+      formatter = new Intl.DateTimeFormat("en-CA", {
+        timeZone, year: "numeric", month: "2-digit", day: "2-digit",
+        hour: "2-digit", minute: "2-digit", hourCycle: "h23",
+      });
+      FORMATTERS.set(timeZone, formatter);
+    }
+    const parts = formatter.formatToParts(date);
     return Object.fromEntries(parts.map((part) => [part.type, part.value]));
   }
 
