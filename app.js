@@ -20,21 +20,43 @@
   let installPrompt;
   let syncStatus = window.lifeRemote?.session() ? { state: "idle", detail: "Ready to sync" } : { state: "offline", detail: "Local mode" };
 
+  // Cache Intl formatters to prevent slow instantiations during innerHTML redrawing (saves ~1-2ms per call)
+  const formatters = new Map();
+
   C.ensureDay(state, currentDay);
   C.ensureWeek(state, currentDay);
   C.save(state);
 
   function dateLabel(day = currentDay, options = {}) {
-    return new Intl.DateTimeFormat("en", { timeZone: "UTC", weekday: options.short ? "short" : "long", month: options.short ? "short" : "long", day: "numeric" }).format(new Date(`${day}T12:00:00Z`));
+    const key = `date-UTC-${options.short ? 'short' : 'long'}`;
+    let formatter = formatters.get(key);
+    if (!formatter) {
+      formatter = new Intl.DateTimeFormat("en", { timeZone: "UTC", weekday: options.short ? "short" : "long", month: options.short ? "short" : "long", day: "numeric" });
+      formatters.set(key, formatter);
+    }
+    return formatter.format(new Date(`${day}T12:00:00Z`));
   }
 
   function timeLabel(value) {
     if (!value) return "No time";
-    return new Intl.DateTimeFormat("en", { timeZone: state.settings.timezone, hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).format(new Date(value));
+    const key = `time-${state.settings.timezone}`;
+    let formatter = formatters.get(key);
+    if (!formatter) {
+      formatter = new Intl.DateTimeFormat("en", { timeZone: state.settings.timezone, hour: "2-digit", minute: "2-digit", hourCycle: "h23" });
+      formatters.set(key, formatter);
+    }
+    return formatter.format(new Date(value));
   }
 
   function money(value, currency = "USD") {
-    return new Intl.NumberFormat("en", { style: "currency", currency: String(currency).trim() || "USD", maximumFractionDigits: 2 }).format(Number(value || 0));
+    const safeCurrency = String(currency).trim() || "USD";
+    const key = `money-${safeCurrency}`;
+    let formatter = formatters.get(key);
+    if (!formatter) {
+      formatter = new Intl.NumberFormat("en", { style: "currency", currency: safeCurrency, maximumFractionDigits: 2 });
+      formatters.set(key, formatter);
+    }
+    return formatter.format(Number(value || 0));
   }
 
   function persist(message, sync = true) {
