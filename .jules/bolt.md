@@ -1,0 +1,3 @@
+## 2024-10-10 - Intl.DateTimeFormat Caching Performance Bottleneck
+**Learning:** Instantiating `Intl.DateTimeFormat` or `Intl.NumberFormat` repeatedly inside functions like `dateLabel`, `timeLabel`, `money`, and `zonedParts` is a severe performance bottleneck, especially in this application's architecture where `innerHTML` completely redraws the main content on every interaction.
+**Action:** Always cache formatter instances by locale/timezone and specific formatting options (e.g. `date-short`, `time-Africa/Casablanca`, `money-USD`) to prevent cache key collisions and drastically improve rendering performance.
