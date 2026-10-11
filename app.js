@@ -11,6 +11,7 @@
   const LABELS = { deen: "Deen", licence: "Licence", job: "Job", health: "Health", youtube: "YouTube", experiment: "Experiment" };
   const PRAYER_LABELS = { fajr: "Fajr", dhuhr: "Dhuhr", asr: "Asr", maghrib: "Maghrib", isha: "Isha" };
   const STATUS_LABELS = { unrecorded: "Not recorded", on_time: "On time", late: "Late", missed: "Missed" };
+  const INTL_CACHE = new Map();
   let state = C.load();
   let currentDay = C.dateKey(new Date(), state.settings.timezone);
   let prayerResult = { status: "loading", timings: null };
@@ -24,17 +25,37 @@
   C.ensureWeek(state, currentDay);
   C.save(state);
 
+  // ⚡ Bolt: Cache expensive Intl formatters to prevent performance bottlenecks on frequent redrawing
   function dateLabel(day = currentDay, options = {}) {
-    return new Intl.DateTimeFormat("en", { timeZone: "UTC", weekday: options.short ? "short" : "long", month: options.short ? "short" : "long", day: "numeric" }).format(new Date(`${day}T12:00:00Z`));
+    const key = options.short ? "date-short-UTC" : "date-long-UTC";
+    let formatter = INTL_CACHE.get(key);
+    if (!formatter) {
+      formatter = new Intl.DateTimeFormat("en", { timeZone: "UTC", weekday: options.short ? "short" : "long", month: options.short ? "short" : "long", day: "numeric" });
+      INTL_CACHE.set(key, formatter);
+    }
+    return formatter.format(new Date(`${day}T12:00:00Z`));
   }
 
   function timeLabel(value) {
     if (!value) return "No time";
-    return new Intl.DateTimeFormat("en", { timeZone: state.settings.timezone, hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).format(new Date(value));
+    const key = "time-" + state.settings.timezone;
+    let formatter = INTL_CACHE.get(key);
+    if (!formatter) {
+      formatter = new Intl.DateTimeFormat("en", { timeZone: state.settings.timezone, hour: "2-digit", minute: "2-digit", hourCycle: "h23" });
+      INTL_CACHE.set(key, formatter);
+    }
+    return formatter.format(new Date(value));
   }
 
   function money(value, currency = "USD") {
-    return new Intl.NumberFormat("en", { style: "currency", currency: String(currency).trim() || "USD", maximumFractionDigits: 2 }).format(Number(value || 0));
+    const cleanCurrency = String(currency).trim() || "USD";
+    const key = "money-" + cleanCurrency;
+    let formatter = INTL_CACHE.get(key);
+    if (!formatter) {
+      formatter = new Intl.NumberFormat("en", { style: "currency", currency: cleanCurrency, maximumFractionDigits: 2 });
+      INTL_CACHE.set(key, formatter);
+    }
+    return formatter.format(Number(value || 0));
   }
 
   function persist(message, sync = true) {
