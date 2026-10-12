@@ -258,6 +258,7 @@
   }
 
   function removeRecord(collection, id) {
+    if (!window.confirm("Are you sure you want to remove this record?")) return;
     const record = state[collection].find((item) => item.id === id);
     if (!record) return;
     state[collection] = state[collection].filter((item) => item.id !== id);
