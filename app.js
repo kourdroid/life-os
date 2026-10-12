@@ -19,22 +19,30 @@
   let syncTimer;
   let installPrompt;
   let syncStatus = window.lifeRemote?.session() ? { state: "idle", detail: "Ready to sync" } : { state: "offline", detail: "Local mode" };
+  const intlCache = {};
 
   C.ensureDay(state, currentDay);
   C.ensureWeek(state, currentDay);
   C.save(state);
 
   function dateLabel(day = currentDay, options = {}) {
-    return new Intl.DateTimeFormat("en", { timeZone: "UTC", weekday: options.short ? "short" : "long", month: options.short ? "short" : "long", day: "numeric" }).format(new Date(`${day}T12:00:00Z`));
+    const key = `date-${options.short ? "short" : "long"}`;
+    if (!intlCache[key]) intlCache[key] = new Intl.DateTimeFormat("en", { timeZone: "UTC", weekday: options.short ? "short" : "long", month: options.short ? "short" : "long", day: "numeric" });
+    return intlCache[key].format(new Date(`${day}T12:00:00Z`));
   }
 
   function timeLabel(value) {
     if (!value) return "No time";
-    return new Intl.DateTimeFormat("en", { timeZone: state.settings.timezone, hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).format(new Date(value));
+    const key = `time-${state.settings.timezone}`;
+    if (!intlCache[key]) intlCache[key] = new Intl.DateTimeFormat("en", { timeZone: state.settings.timezone, hour: "2-digit", minute: "2-digit", hourCycle: "h23" });
+    return intlCache[key].format(new Date(value));
   }
 
   function money(value, currency = "USD") {
-    return new Intl.NumberFormat("en", { style: "currency", currency: String(currency).trim() || "USD", maximumFractionDigits: 2 }).format(Number(value || 0));
+    const cur = String(currency).trim() || "USD";
+    const key = `money-${cur}`;
+    if (!intlCache[key]) intlCache[key] = new Intl.NumberFormat("en", { style: "currency", currency: cur, maximumFractionDigits: 2 });
+    return intlCache[key].format(Number(value || 0));
   }
 
   function persist(message, sync = true) {

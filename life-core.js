@@ -9,6 +9,7 @@
   const STORAGE_KEY = "life-os-v4";
   const AREA_ORDER = ["deen", "licence", "job", "health", "youtube", "experiment"];
   const IMPORTANCE_ORDER = { core: 0, committed: 1, flexible: 2 };
+  const intlCache = {};
 
   function uuid() {
     return globalThis.crypto?.randomUUID?.() || `local-${Date.now()}-${Math.random().toString(16).slice(2)}`;
@@ -17,10 +18,14 @@
   function nowIso() { return new Date().toISOString(); }
 
   function zonedParts(date = new Date(), timeZone = "Africa/Casablanca") {
-    const parts = new Intl.DateTimeFormat("en-CA", {
-      timeZone, year: "numeric", month: "2-digit", day: "2-digit",
-      hour: "2-digit", minute: "2-digit", hourCycle: "h23",
-    }).formatToParts(date);
+    const key = `zoned-${timeZone}`;
+    if (!intlCache[key]) {
+      intlCache[key] = new Intl.DateTimeFormat("en-CA", {
+        timeZone, year: "numeric", month: "2-digit", day: "2-digit",
+        hour: "2-digit", minute: "2-digit", hourCycle: "h23",
+      });
+    }
+    const parts = intlCache[key].formatToParts(date);
     return Object.fromEntries(parts.map((part) => [part.type, part.value]));
   }
 
